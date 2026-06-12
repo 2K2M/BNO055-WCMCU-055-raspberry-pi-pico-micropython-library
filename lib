@@ -1,0 +1,92 @@
+import ustruct
+import utime
+
+# Register constants from the official Bosch Sensortec BNO055.h file
+_CHIP_ID_ADDR = 0x00
+_EUL_HEADING_LSB_ADDR = 0x1A  # Starting register for Euler angles
+_CALIB_STAT_ADDR = 0x35       # Calibration status register
+_OPR_MODE_ADDR = 0x3D         # Operation mode register
+
+# Operation modes
+_OPERATION_MODE_NDOF = 0x0C   # Absolute Orientation Mode (9-axis Sensor Fusion)
+
+class BNO055:
+    """Lightweight MicroPython driver for the Bosch BNO055 Intelligent 9-Axis IMU"""
+    def __init__(self, i2c, address=0x29):
+        self.i2c = i2c
+        self.address = address
+        
+        print("[ INIT ] Waiting for the BNO055 ARM processor to boot...")
+        utime.sleep(1) # CRITICAL PAUSE required for the chip's cold start
+        
+        # Switch sensor to NDOF mode (9 Degrees of Freedom)
+        self._write_reg(_OPR_MODE_ADDR, _OPERATION_MODE_NDOF)
+        utime.sleep_ms(100) # Give the chip time to switch execution modes
+        print("[ OK ] NDOF mode activated. Sensor Fusion engine running.")
+
+    def _read_reg(self, reg, length=1):
+        """Read data bytes from the I2C register"""
+        return self.i2c.readfrom_mem(self.address, reg, length)
+
+    def _write_reg(self, reg, val):
+        """Write a single byte to the I2C register"""
+        self.i2c.writeto_mem(self.address, reg, bytes([val]))
+
+    @property
+    def euler(self):
+        """
+        Read Euler angles: Heading (Azimuth), Roll, Pitch.
+        Returns a tuple of calculated angles in degrees.
+        """
+        # Read 6 consecutive bytes (2 bytes per X, Y, Z axis) starting from 0x1A
+        data = self._read_reg(_EUL_HEADING_LSB_ADDR, 6)
+        
+        # Unpack three 16-bit signed integers (Little Endian format)
+        h, r, p = ustruct.unpack("<hhh", data)
+        
+        # Convert raw LSB data into degrees (1 degree = 16 LSB)
+        return (h / 16.0, r / 16.0, p / 16.0)
+
+    @property
+    def calibration_status(self):
+        """Read and parse the current system calibration states"""
+        # Read 1 byte from register. Returns a bytes object, e.g., b'\x3f'
+        data_bytes = self._read_reg(_CALIB_STAT_ADDR)
+        
+        # Extract an integer value from the first element of the bytes array
+        data = data_bytes[0]
+        
+        # Parse calibration values (0 to 3) using bitwise shifting techniques
+        sys = (data >> 6) & 0x03
+        gyro = (data >> 4) & 0x03
+        accel = (data >> 2) & 0x03
+        mag = data & 0x03
+        return sys, gyro, accel, mag
+    
+    def get_calibration(self):
+        """Read the full 22-byte calibration profile array from BNO055 memory"""
+        # Switch to configuration mode (0x00) to unlock offset registers
+        self._write_reg(_OPR_MODE_ADDR, 0x00)
+        utime.sleep_ms(50) 
+        
+        # Read 22 bytes starting from 0x55 address (ACC_OFFSET_X_LSB)
+        data = self._read_reg(0x55, 22)
+        
+        # Switch the device back to NDOF active run mode (0x0C)
+        self._write_reg(_OPR_MODE_ADDR, _OPERATION_MODE_NDOF)
+        utime.sleep_ms(100)
+        
+        return list(data) # Return data formatted as a clean integer list
+
+    def set_calibration(self, profile_list):
+        """Write a pre-baked calibration profile list into the sensor registers"""
+        # Switch to configuration mode to overwrite register partitions
+        self._write_reg(_OPR_MODE_ADDR, 0x00)
+        utime.sleep_ms(50)
+        
+        # Write the 22-byte calibration profile into register block 0x55
+        self.i2c.writeto_mem(self.address, 0x55, bytes(profile_list))
+        
+        # Switch the device back to operational NDOF fusion environment
+        self._write_reg(_OPR_MODE_ADDR, _OPERATION_MODE_NDOF)
+        utime.sleep_ms(100)
