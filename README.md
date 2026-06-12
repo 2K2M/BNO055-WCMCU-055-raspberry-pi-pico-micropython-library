@@ -7,6 +7,7 @@ If you are using a cheap Chinese **WCMCU-055** clone board, it **will not work o
    * **LRX** pin on the board acts as **SCL**
 3. **Address Pin Pull-down:** To prevent the communication bus from floating, you must pull the address select pin down to Ground (**GND**).
 
+<img width="169" height="205" alt="Wiring" src="https://github.com/user-attachments/assets/929802fa-d556-4985-9c6a-f1738abc8595" />
 
 
 * **Strict 50kHz I2C Clock:** You **MUST** initialize `SoftI2C` at exactly `freq=50000` (50 kHz). At 100 kHz or higher, the co-processor on these clone boards encounters internal timing timeouts, drops data packets, and locks up the entire bus (`ENODEV` / `EIO`).
