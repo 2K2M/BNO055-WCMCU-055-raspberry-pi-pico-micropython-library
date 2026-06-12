@@ -1,0 +1,53 @@
+import machine
+import utime
+from bno055 import BNO055
+
+print("=" * 50)
+print("     BNO055 ORIENTATION SYSTEM MONITOR     ")
+print("=" * 50)
+
+# --- CALIBRATION DATA ---
+# Pre-defined calibration profile and True North offset
+CALIB_PROFILE = [245, 255, 13, 0, 246, 255, 179, 0, 222, 0, 196, 255, 255, 255, 254, 255, 0, 0, 232, 3, 200, 2]
+COMPASS_OFFSET = -222.00
+
+# Initialize I2C bus (50 kHz is optimal for WCMCU-055 clone reliability)
+i2c = machine.SoftI2C(sda=machine.Pin(4), scl=machine.Pin(5), freq=50000)
+sensor = BNO055(i2c, address=0x28)
+
+# Apply the pre-stored calibration profile to the sensor registers
+try:
+    sensor.set_calibration(CALIB_PROFILE)
+    print("[ OK ] Calibration profile successfully applied!")
+except Exception as e:
+    print("[ WARNING ] Failed to apply calibration:", e)
+
+print("-" * 50)
+print("Starting continuous orientation tracking...")
+print("-" * 50)
+
+while True:
+    try:
+        # 1. Read raw Euler angles from the sensor
+        raw_heading, roll, pitch = sensor.euler
+        
+        # 2. Apply True North offset and normalize to 0-360 range
+        real_heading = (raw_heading + COMPASS_OFFSET) % 360
+        
+        # 3. Read calibration status for diagnostic monitoring
+        sys_st, gyro, accel, mag = sensor.calibration_status
+        
+        # Output telemetry to console (10 Hz update rate)
+        print(
+            f"HEADING: {real_heading:>6.2f}° | "
+            f"ROLL: {roll:>6.2f}° | "
+            f"PITCH: {pitch:>6.2f}° || "
+            f"CAL:[S:{sys_st} M:{mag} G:{gyro} A:{accel}]     ", 
+            end="\r"
+        )
+        
+    except Exception as e:
+        print(f"\n[ I2C BUS ERROR ]: {e}")
+        utime.sleep_ms(500)
+        
+    utime.sleep_ms(100)
