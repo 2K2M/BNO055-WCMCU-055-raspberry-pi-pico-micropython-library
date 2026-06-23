@@ -37,8 +37,8 @@ try:
     # STEP 1: GYROSCOPE CALIBRATION
     # -----------------------------------------------------------------
     print("\n[ STEP 1/3 ]: GYROSCOPE STABILIZATION")
-    print("👉 Place the sensor/antenna on a flat, stable surface and let it rest.")
-    print("👉 Watch the log. Once 'G' reaches 3, click in the Thonny Shell and hit [ ENTER ]...")
+    print(" Place the sensor/antenna on a flat, stable surface and let it rest.")
+    print(" Watch the log. Once 'G' reaches 3, click in the Thonny Shell and hit [ ENTER ]...")
     print("-" * 50)
     
     while True:
@@ -56,10 +56,10 @@ try:
     # -----------------------------------------------------------------
     print("\n" + "-" * 50)
     print("[ STEP 2/3 ]: TRUE NORTH LOCK & MAGNETOMETER CALIBRATION")
-    print("👉 Point the sensor's X-axis (antenna) exactly to MAGNETIC NORTH using a reference.")
-    print("👉 Move the board in 'figure-8' patterns in the air to calibrate the magnetometer.")
-    print("👉 Return the antenna to the North position and hold it steady.")
-    print("👉 Once 'M' reaches 3, hit [ ENTER ] to lock the North offset!")
+    print(" Point the sensor's X-axis (antenna) exactly to MAGNETIC NORTH using a reference.")
+    print(" Move the board in 'figure-8' patterns in the air to calibrate the magnetometer.")
+    print(" Return the antenna to the North position and hold it steady.")
+    print(" Once 'M' reaches 3, hit [ ENTER ] to lock the North offset!")
     print("-" * 50)
     
     north_offset = 0.0
@@ -84,8 +84,8 @@ try:
     # -----------------------------------------------------------------
     print("\n" + "-" * 50)
     print("[ STEP 3/3 ]: ACCELEROMETER CALIBRATION")
-    print("👉 Slowly tilt the platform/sensor to various angles (45-90 degrees).")
-    print("👉 Once 'A' reaches 3, return the device to flat orientation and hit [ ENTER ].")
+    print(" Slowly tilt the platform/sensor to various angles (45-90 degrees).")
+    print(" Once 'A' reaches 3, return the device to flat orientation and hit [ ENTER ].")
     print("-" * 50)
     
     clear_keyboard_buffer()
@@ -110,7 +110,7 @@ try:
     # Read the 22-byte calibration snapshot from the BNO memory
     iron_profile = sensor.get_calibration()
     
-    print("\n👉 Copy these lines into the top of your main.py:\n")
+    print("\n Copy these lines into the top of your main.py:\n")
     print(f"calib_profile = {iron_profile}")
     print(f"COMPASS_OFFSET = {north_offset:.2f}")
     print("\n" + "=" * 50)
