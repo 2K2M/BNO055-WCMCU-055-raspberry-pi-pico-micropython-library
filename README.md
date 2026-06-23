@@ -15,10 +15,10 @@ If you are using a cheap Chinese **WCMCU-055** clone board, it **will not work o
 
 ---
 
-## 🎯 Advanced Multi-Stage Interactive Calibration Suite
+##  Advanced Multi-Stage Interactive Calibration Suite
 
 This project includes a specialized `сalibration.py` script designed for absolute real-world tracking accuracy (e.g., antenna rotators):
 
-* **Strict Hardware Sequence:** Calibrates layers step-by-step (**Gyroscope ➡️ Compass/True-North ➡️ Accelerometer**).
+* **Strict Hardware Sequence:** Calibrates layers step-by-step (**Gyroscope  Compass/True-North  Accelerometer**).
 * **Manual True-North Zeroing:** Allows you to physically align your device's X-axis with the real-world North using a reference compass, hit `ENTER`, and visually freeze the math offset (`COMPASS_OFFSET`) into your final deployment profile.
 * **Anti-Skip Terminal Lock:** Bypasses MicroPython IDE buffer overflow glitches, ensuring the calibration manager never auto-skips steps.
